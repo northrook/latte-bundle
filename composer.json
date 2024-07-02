@@ -1,0 +1,33 @@
+{
+  "name": "northrook/latte-bundle",
+  "type": "library",
+  "description": "Nette\\Latte integration for Northrook packages.",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Northrook\\Latte\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Martin",
+      "email": "mn@northrook.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.2",
+    "latte/latte": "@stable",
+    "northrook/core": "dev-main",
+    "symfony/filesystem": "^7.1",
+    "northrook/cache": "dev-main",
+    "northrook/html-element": "dev-main",
+    "northrook/support": "dev-main",
+    "northrook/minify": "dev-main"
+  },
+  "require-dev": {
+    "phpstan/phpstan": " @stable",
+    "northrook/dev-env": "dev-main"
+  }
+}
