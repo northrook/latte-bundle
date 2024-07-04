@@ -15,7 +15,7 @@ final class CoreExtension extends Latte\Extension
 {
     public function getTags() : array {
         return [
-            'Field'     => [ Element::class, 'create' ],
+            // 'Field'     => [ Element::class, 'create' ],
             'n:id'      => [ IdNode::class, 'create' ],
             'n:class'   => [ ClassNode::class, 'create' ],
             'n:element' => [ ElementNode::class, 'create' ],
