@@ -16,7 +16,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Stopwatch\Stopwatch;
 use function Northrook\Core\Function\normalizeKey;
 use function Northrook\Core\Function\normalizePath;
-use function Northrook\Core\Function\replaceEach;
 
 /**
  * @property-read Stopwatch $stopwatch
@@ -106,6 +105,7 @@ final class LatteBundle
         bool           $preProcessing = true,
         bool           $postProcessing = true,
     ) : string {
+        $this->stopwatch->start( 'latte.render: ' . $template );
 
         $engine = $this->engine();
         $loader = $engine->getLoader();
@@ -126,7 +126,12 @@ final class LatteBundle
             }
         }
 
-        return Minify::HTML( $content );
+
+        $html = Minify::HTML( $content );
+
+        $this->stopwatch->stop( 'latte.render: ' . $template );
+
+        return $html;
     }
 
     /**
@@ -188,6 +193,8 @@ final class LatteBundle
 
     private function startEngine( ?Latte\Loader $loader = null ) : Latte\Engine {
 
+        $this->stopwatch->start( 'latte.engine', 'Templating' );
+
         // Enable auto-refresh when debugging.
         if ( null === $this->autoRefresh && Env::isDebug() ) {
             Log::notice( 'Auto-refresh enabled due to env.debug' );
@@ -212,8 +219,6 @@ final class LatteBundle
               ->setLoader( $loader );
 
         Log::info( 'Started Latte Engine {id}.', [ 'id' => spl_object_id( $latte ), 'engine' => $latte ] );
-
-        dump( $latte );
 
         return $latte;
     }
