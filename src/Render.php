@@ -2,67 +2,142 @@
 
 namespace Northrook\Latte;
 
-use Latte\Engine;
-use Latte\Essential\Nodes\BlockNode;
-use Northrook\Cache;
+use Latte;
 use Northrook\Core\Trait\SingletonClass;
-use Northrook\Debug;
-use Northrook\Latte\Compiler\TemplateParser;
-use Northrook\Logger\Log;
-use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Contracts\Cache\CacheInterface;
+use Northrook\Minify;
+use Symfony\Component\Stopwatch\Stopwatch;
+use function Northrook\Core\Function\normalizePath;
 
 final class Render
 {
     use SingletonClass;
 
+    private Latte\Engine $engine;
+    private Latte\Loader $loader;
+
+
     public function __construct(
-        private readonly LatteBundle $latte,
+        Latte\Engine            $engine,
+        private readonly string $projectDirectory, // used to check if a provided $template starts with a 'valid' path
+        // private readonly string $cacheDirectory,
+        private readonly array  $templateDirectories = [],
+        private readonly array  $globalVariables = [],
+        private readonly array  $postProcessors = [],
+        private ?Stopwatch      $stopwatch = null,
     ) {
         $this->instantiationCheck();
+        $this->setEngine( $engine );
         $this::$instance = $this;
     }
 
-    private static function latte() : LatteBundle {
-        return Render::getInstance()->latte;
+    public function setEngine( Latte\Engine $engine ) : void {
+        $this->engine = $engine;
+        $this->loader = $this->engine->getLoader();
     }
 
-    private static function templateFile(
-        string $template, object | array $parameters = [],
-    ) {}
-
-
-    public static function string(
+    public static function toString(
         string         $template,
         object | array $parameters = [],
-    ) : string {
-        return Render::latte()->renderTemplate( $template, $parameters );
+        ?string        $block = null,
+        bool           $preProcessing = false,
+        bool           $postProcessing = true,
+    ) : string{
+        return Render::getInstance()->renderToString( $template, $parameters, $block, $preProcessing, $postProcessing );
     }
 
+
     /**
-     * Render a template to string.
+     * Render a given template to string.
      *
-     * - No preprocessing.
-     * - No {@see TemplateParser} parsing.
-     * - Results are not cached.
-     *
-     * @param string        $name
+     * @param string        $template
      * @param object|array  $parameters
      * @param null|string   $block
      *
+     * @param bool          $preProcessing
+     * @param bool          $postProcessing
+     *
      * @return string
      */
-    public static function template(
-        string         $name,
+    public function renderToString(
+        string         $template,
         object | array $parameters = [],
         ?string        $block = null,
+        bool           $preProcessing = true,
+        bool           $postProcessing = true,
     ) : string {
-        return Render::latte()->renderToString(
-            template         : $name,
-            parameters       : $parameters,
-            block            : $block,
-            postProcessing   : false,
+
+        $this->stopwatch->start( 'latte.render: ' . $template );
+
+        if ( $this->loader instanceof Loader ) {
+            $this->loader->parsePreprocessors = $preProcessing;
+        }
+
+        $content = $this->engine->renderToString(
+            $this->load( $template ),
+            $this->global( $parameters ),
+            $block,
         );
+
+        if ( $postProcessing && $this->postProcessors ) {
+            foreach ( $this->postProcessors as $postProcessor ) {
+                $content = $postProcessor->parseContent( $content )->toString();
+            }
+        }
+
+
+        $html = Minify::HTML( $content );
+
+        $this->stopwatch->stop( 'latte.render: ' . $template );
+
+        return $html;
+    }
+
+
+    /**
+     * @param string   $template
+     * @param ?string  $namespace
+     *
+     * @return string
+     */
+    private function load( string $template, ?string $namespace = null ) : string {
+
+        if ( !str_ends_with( $template, '.latte' ) ) {
+            return $template;
+        }
+
+        $template = normalizePath( $template );
+
+        foreach ( $this->templateDirectories as $directory ) {
+
+            if ( str_starts_with( $template, $directory ) && file_exists( $directory ) ) {
+                return $template;
+            }
+
+
+            $path = $directory . DIRECTORY_SEPARATOR . $template;
+
+            if ( file_exists( $path ) ) {
+                return $path;
+            }
+        }
+
+        return $template;
+    }
+
+    /**
+     * Adds {@see Render::$globalParameters} to all templates.
+     *
+     * - {@see $globalParameters} are not available when using Latte `templateType` objects.
+     *
+     * @param object|array  $parameters
+     *
+     * @return object|array
+     */
+    private function global( object | array $parameters ) : object | array {
+        if ( is_object( $parameters ) ) {
+            return $parameters;
+        }
+
+        return $this->globalVariables + $parameters;
     }
 }

@@ -3,13 +3,11 @@
 namespace Northrook\Latte;
 
 use Latte;
-use Northrook\Cache;
 use Northrook\Core\Env;
 use Northrook\Core\Trait\PropertyAccessor;
 use Northrook\Latte\Compiler\TemplateParser;
-use Northrook\Logger\Log;
 use Northrook\Latte\Extension\CoreExtension;
-use Northrook\Minify;
+use Northrook\Logger\Log;
 use Northrook\Support\File;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -25,8 +23,7 @@ final class LatteBundle
 {
     use PropertyAccessor;
 
-    /** @var Latte\Engine[] */
-    private array $engine = [];
+    private readonly Render $render;
 
     /** @var Latte\Extension[] */
     private array $extensions = [];
@@ -41,27 +38,27 @@ final class LatteBundle
     private array $templateDirectories = [];
 
     public function __construct(
+        public readonly string $projectDirectory,
         public readonly string $cacheDirectory,
         string | array         $templateDirectories = [],
-        array                  $globalVariables = [],
         array                  $extensions = [],
+        array                  $globalVariables = [],
         array                  $preprocessors = [],
         array                  $postprocessors = [],
+        array                  $staticAccessors = [],
         private ?Stopwatch     $stopwatch = null,
         public ?bool           $autoRefresh = null,
-        private ?int           $cacheTTL = 1,
     ) {
         $this->stopwatch ??= new Stopwatch( true );
         $this->setTemplateDirectories( $templateDirectories );
         $this->addExtension( ... [ new CoreExtension(), ... $extensions ] );
+        $this->globalVariables = $globalVariables;
         $this->preprocessors   = $preprocessors;
         $this->postprocessors  = $postprocessors;
-        $this->globalVariables = $globalVariables;
     }
 
     public function __get( string $property ) : int | null | Latte\Engine | Stopwatch {
         return match ( $property ) {
-            'engine'    => $this->engine(),
             'stopwatch' => $this->stopwatch,
             'cacheTTL'  => $this->cacheTTL,
         };
@@ -73,123 +70,36 @@ final class LatteBundle
 
     // Render ---------------------------------------
 
-    public function renderTemplate(
+    public function render(
         string         $template,
         object | array $parameters = [],
         ?string        $block = null,
-        ?int           $persistence = Cache::EPHEMERAL,
     ) : string {
-        return Cache::memoize(
-            callback    : [ $this, 'renderToString' ],
-            arguments   : [ $template, $parameters, $block ],
-            persistence : $persistence ?? $this->cacheTTL,
+        dump( $this );
+        return $this->renderEngine()->renderToString( $template, $parameters, $block );
+    }
+
+    public function startRenderEngine() : void {
+        $this->renderEngine();
+    }
+
+    private function renderEngine() : Render {
+        return $this->render ??= new Render(
+                        $this->startEngine(),
+                        $this->projectDirectory,
+                        $this->templateDirectories,
+                        $this->globalVariables,
+            stopwatch : $this->stopwatch,
         );
-    }
-
-    /**
-     * Render a given template to string.
-     *
-     * @param string        $template
-     * @param object|array  $parameters
-     * @param null|string   $block
-     *
-     * @param bool          $preProcessing
-     * @param bool          $postProcessing
-     *
-     * @return string
-     */
-    public function renderToString(
-        string         $template,
-        object | array $parameters = [],
-        ?string        $block = null,
-        bool           $preProcessing = true,
-        bool           $postProcessing = true,
-    ) : string {
-        $this->stopwatch->start( 'latte.render: ' . $template );
-
-        $engine = $this->engine();
-        $loader = $engine->getLoader();
-
-        if ( $loader instanceof Loader ) {
-            $loader->parsePreprocessors = $preProcessing;
-        }
-
-        $content = $engine->renderToString(
-            $this->load( $template ),
-            $this->global( $parameters ),
-            $block,
-        );
-
-        if ( $postProcessing && $this->postprocessors ) {
-            foreach ( $this->postprocessors as $postprocessor ) {
-                $content = $postprocessor->parseContent( $content )->toString();
-            }
-        }
-
-
-        $html = Minify::HTML( $content );
-
-        $this->stopwatch->stop( 'latte.render: ' . $template );
-
-        return $html;
-    }
-
-    /**
-     * @param string   $template
-     * @param ?string  $namespace
-     *
-     * @return string
-     */
-    private function load( string $template, ?string $namespace = null ) : string {
-
-        if ( !str_ends_with( $template, '.latte' ) ) {
-            return $template;
-        }
-
-        $template    = normalizePath( $template );
-        $directories = $this->getTemplateDirectories( $namespace );
-
-        foreach ( $directories as $directory ) {
-
-            if ( str_starts_with( $template, $directory ) && file_exists( $directory ) ) {
-                return $template;
-            }
-
-
-            $path = $directory . DIRECTORY_SEPARATOR . $template;
-
-            if ( file_exists( $path ) ) {
-                return $path;
-            }
-        }
-
-        return $template;
-    }
-
-    /**
-     * Adds {@see Render::$globalParameters} to all templates.
-     *
-     * - {@see $globalParameters} are not available when using Latte `templateType` objects.
-     *
-     * @param object|array  $parameters
-     *
-     * @return object|array
-     */
-    private function global( object | array $parameters ) : object | array {
-        if ( is_object( $parameters ) ) {
-            return $parameters;
-        }
-
-        return $this->globalVariables + $parameters;
     }
 
     // Render ----------------------------------- End
     //
     // Engine ---------------------------------------
 
-    public function engine( ?Latte\Loader $loader = null ) : Latte\Engine {
-        return $this->engine[ $loader ?? Loader::class ] ??= $this->startEngine( $loader );
-    }
+    // public function engine( ?Latte\Loader $loader = null ) : Latte\Engine {
+    //     return $this->engine ??= $this->startEngine( $loader );
+    // }
 
     private function startEngine( ?Latte\Loader $loader = null ) : Latte\Engine {
 
@@ -197,7 +107,7 @@ final class LatteBundle
 
         // Enable auto-refresh when debugging.
         if ( null === $this->autoRefresh && Env::isDebug() ) {
-            Log::notice( 'Auto-refresh enabled due to env.debug' );
+            Log::notice( 'Auto-refresh enabled due to env.debug. Assign $autoRefresh manually to override this behaviour.' );
             $this->autoRefresh = true;
         }
 
@@ -223,11 +133,6 @@ final class LatteBundle
         return $latte;
     }
 
-    public function stopEngine() : self {
-        unset( $this->engine );
-        return $this;
-    }
-
     /**
      * Add {@see Latte\Extension}s to this {@see Environment}.
      *
@@ -250,10 +155,6 @@ final class LatteBundle
     // Engine ----------------------------------- End
     //
     // Variables ------------------------------------
-
-    public function getGlobalVariables() : array {
-        return $this->globalVariables;
-    }
 
     public function addGlobalVariable( string $key, mixed $value ) : self {
         $this->globalVariables[ $key ] = $value;
@@ -283,40 +184,40 @@ final class LatteBundle
     //
     // Templates ------------------------------------
 
-    public function addTemplateDirectory( string $directory, $namespace = null ) : self {
-        if ( is_string( $namespace ) ) {
-            $this->templateDirectories[] = [
-                'namespace' => normalizeKey( $namespace ),
-                'path'      => normalizePath( $directory ),
-            ];
-        }
-        else {
-            $this->templateDirectories[] = normalizePath( $directory );
-        }
+    /**
+     * Add a directory path to a `templates` directory.
+     *
+     * It is recommended to provide a namespace to avoid collisions.
+     *
+     * If no namespace is provided, generate one fromm the final directory of the path
+     *
+     * @param string   $path
+     * @param ?string  $namespace  [optional]
+     *
+     * @return $this
+     */
+    public function addTemplateDirectory(
+        string  $path,
+        ?string $namespace = null,
+    ) : self {
+        $namespace = normalizeKey( $namespace ?? basename( $path ) );
+
+        $this->templateDirectories[ $namespace ] = normalizePath( $path );
 
         return $this;
     }
 
+    /**
+     * Assign multiple directories using {@see addTemplateDirectory} internally.
+     *
+     * @param string|array  $templateDirectories
+     *
+     * @return void
+     */
     public function setTemplateDirectories( string | array $templateDirectories ) : void {
         foreach ( (array) $templateDirectories as $namespace => $directory ) {
-            $this->addTemplateDirectory( $directory, $namespace );
+            $this->addTemplateDirectory( $directory, is_int( $namespace ) ? null : $namespace );
         }
-    }
-
-    public function getTemplateDirectories( ?string $namespace = null ) : array {
-        $directories = [];
-        foreach ( $this->templateDirectories as $directory ) {
-            if ( !$namespace ) {
-                $directories[] = is_string( $directory ) ? $directory : $directory[ 'path' ];
-                continue;
-            }
-
-            if ( is_array( $directory ) && $namespace === $directory[ 'namespace' ] ) {
-                $directories[] = $directory[ 'path' ];
-            }
-
-        }
-        return $directories;
     }
 
     public function clearCache() : bool {
