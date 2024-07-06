@@ -4,8 +4,6 @@ namespace Northrook\Latte\Compiler;
 
 use Northrook\Core\Interface\Printable;
 use Northrook\Core\Trait\PrintableClass;
-use Northrook\Core\Trait\PropertyAccessor;
-use Northrook\Debug;
 
 /**
  * @author Martin Nielsen <mn@northrook.com>

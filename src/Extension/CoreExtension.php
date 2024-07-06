@@ -3,22 +3,15 @@
 namespace Northrook\Latte\Extension;
 
 use Latte;
-use Latte\Runtime\Template;
-use Northrook\Debug;
-use Northrook\HTML\Element;
 use Northrook\Latte\Nodes\ClassNode;
-use Northrook\Latte\Nodes\ElementNode;
 use Northrook\Latte\Nodes\IdNode;
-use Psr\Log\LoggerInterface;
 
 final class CoreExtension extends Latte\Extension
 {
     public function getTags() : array {
         return [
-            // 'Field'     => [ Elemåååent::class, 'create' ],
-            'n:id'      => [ IdNode::class, 'create' ],
-            'n:class'   => [ ClassNode::class, 'create' ],
-            'n:element' => [ ElementNode::class, 'create' ],
+            'n:id'    => [ IdNode::class, 'create' ],
+            'n:class' => [ ClassNode::class, 'create' ],
         ];
     }
 

@@ -4,15 +4,13 @@ declare( strict_types = 1 );
 
 namespace Northrook\Latte;
 
-use JetBrains\PhpStorm\Deprecated;
 use Latte;
 use Northrook\Cache;
 use Northrook\Core\Attribute\EntryPoint;
 use Northrook\Core\Attribute\ExitPoint;
-use Northrook\Debug;
+use Northrook\Latte\Compiler\MissingTemplateException;
 use Northrook\Latte\Compiler\TemplateParser;
 use Northrook\Logger\Log;
-use Northrook\Latte\Compiler\MissingTemplateException;
 use Northrook\Minify;
 use Northrook\Support\Str;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -106,11 +104,12 @@ final class Loader implements Latte\Loader
         return $name;
     }
 
-
     private function compile( $content ) : void {
 
+        // Assign the $content
         $this->content = trim( $content );
 
+        // Bail early if requested
         if ( $this->parsePreprocessors === false ) {
             return;
         }
@@ -124,8 +123,8 @@ final class Loader implements Latte\Loader
             // Ensure proper handling of Latte tags and their variables
              ->handleLatteTags();
 
-            // Minify the initial template string
-            //  ->compressContent();
+        // Minify the initial template string
+        //  ->compressContent();
 
         // Loop through each Precompiler
         foreach ( $this->preprocessors as $preprocessor ) {
@@ -137,7 +136,6 @@ final class Loader implements Latte\Loader
              ->compressContent();
     }
 
-
     /**
      * Normalize a path with traversal parsing.
      *
@@ -147,25 +145,27 @@ final class Loader implements Latte\Loader
      */
     protected static function normalizePath( string $path ) : string {
 
-        $explodedPath = explode( '/', str_replace( '\\', '/', $path ) );
-        $returnPath   = [];
+        $explodedPath  = explode( '/', str_replace( '\\', '/', $path ) );
+        $pathDirectory = [];
 
         foreach ( $explodedPath as $directory ) {
-            if ( $directory === '..' && $returnPath && end( $returnPath ) !== '..' ) {
-                array_pop( $returnPath );
+            if ( $directory === '..' && $pathDirectory && end( $pathDirectory ) !== '..' ) {
+                array_pop( $pathDirectory );
             }
             elseif ( $directory !== '.' ) {
-                $returnPath[] = $directory;
+                $pathDirectory[] = $directory;
             }
         }
 
-        return implode( DIRECTORY_SEPARATOR, $returnPath );
+        return implode( DIRECTORY_SEPARATOR, $pathDirectory );
     }
 
+    /**
+     * Compress the current {@see Loader::$content}.
+     *
+     * @return Loader
+     */
     private function compressContent() : Loader {
-        // $squish  = preg_replace( '/\s+/', ' ', $this->content );
-        // $cleanup = str_replace( '> <', '>' . PHP_EOL . '<', $squish );
-
         $this->content = (string) Minify::Latte( $this->content );
 
         return $this;

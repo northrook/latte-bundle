@@ -34,7 +34,8 @@ final class LatteBundle
     /** @var TemplateParser[] Applied before caching {@see renderToString}. */
     private array $postprocessors = [];
 
-    private array $globalVariables     = [];
+    private array $globalVariables = [];
+
     private array $templateDirectories = [];
 
     public function __construct(
@@ -45,7 +46,6 @@ final class LatteBundle
         array                  $globalVariables = [],
         array                  $preprocessors = [],
         array                  $postprocessors = [],
-        array                  $staticAccessors = [],
         private ?Stopwatch     $stopwatch = null,
         public ?bool           $autoRefresh = null,
     ) {
@@ -70,15 +70,37 @@ final class LatteBundle
 
     // Render ---------------------------------------
 
+    /**
+     * Render a given template to string.
+     *
+     * @param string        $template
+     * @param object|array  $parameters
+     * @param null|string   $block
+     *
+     * @param bool          $preprocessing
+     * @param bool          $postprocessing
+     *
+     * @return string
+     */
     public function render(
         string         $template,
         object | array $parameters = [],
         ?string        $block = null,
+        bool           $preprocessing = true,
+        bool           $postprocessing = true,
     ) : string {
-        dump( $this );
-        return $this->renderEngine()->renderToString( $template, $parameters, $block );
+        return $this->renderEngine()->renderToString( $template, $parameters, $block, $preprocessing, $postprocessing );
     }
 
+    /**
+     * Manually start the {@see Latte\Engine} at any time.
+     *
+     * - Properties passed to the {@see Latte\Engine} are `readonly`, including:
+     * - {@see LatteBundle::templateDirectories}
+     * - {@see LatteBundle::$globalVariables}
+     *
+     * @return void
+     */
     public function startRenderEngine() : void {
         $this->renderEngine();
     }
@@ -107,7 +129,9 @@ final class LatteBundle
 
         // Enable auto-refresh when debugging.
         if ( null === $this->autoRefresh && Env::isDebug() ) {
-            Log::notice( 'Auto-refresh enabled due to env.debug. Assign $autoRefresh manually to override this behaviour.' );
+            Log::notice(
+                'Auto-refresh enabled due to env.debug. Assign $autoRefresh manually to override this behaviour.',
+            );
             $this->autoRefresh = true;
         }
 
