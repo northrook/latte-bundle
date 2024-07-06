@@ -8,7 +8,6 @@ use Northrook\Core\Trait\PropertyAccessor;
 use Northrook\Debug;
 
 /**
- * @internal
  * @author Martin Nielsen <mn@northrook.com>
  */
 abstract class TemplateParser implements Printable
