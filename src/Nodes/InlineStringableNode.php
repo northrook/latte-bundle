@@ -9,7 +9,7 @@ use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
 use Latte\Compiler\Nodes\StatementNode;
 use Latte\Compiler\PrintContext;
 use Latte\Compiler\Tag;
-use Northrook\HTML\Element;
+use Latte\Runtime\HtmlStringable;
 
 
 /**
@@ -25,35 +25,38 @@ use Northrook\HTML\Element;
  * @link      https://github.com/northrook Documentation
  * @todo      Update URL to documentation
  */
-final class ClassNode extends StatementNode
+final class InlineStringableNode extends StatementNode
 {
-    public ArrayNode $args;
+    public ArrayNode        $args;
+    public readonly ?string $renderedString;
 
     /**
      * @throws CompileException
      */
-    public static function create( Tag $tag ) : ClassNode {
+    public static function create( Tag $tag ) : RenderNode {
 
-        if ( $tag->htmlElement->getAttribute( 'n:class' ) ) {
-            throw new CompileException( 'It is not possible to combine id with n:class, or class.', $tag->position );
-        }
+        // Debug::dumpOnExit( $tag );
 
-        if ( !class_exists( Element::class ) ) {
-            throw new CompileException(
-                'Latte tag `n:class` requires the ' . Element::class . '::class to be present.',
-            );
-        }
-
-        $node       = new ClassNode();
+        $node       = new RenderNode();
         $node->args = $tag->parser->parseArguments();
+
+        $callable = trim( $tag->parser->text, ' \n\r\t\v\0()' );
+
+        if ( is_callable( $callable ) &&
+             $called = ( $callable )() instanceof HtmlStringable ) {
+            $node->renderedString = (string) ( $callable )();
+        }
+        else {
+            $node->renderedString = null;
+        }
 
         return $node;
     }
 
     public function print( PrintContext $context ) : string {
+        // Debug::dumpOnExit( $context );
         return $context->format(
-            'echo ($ʟ_tmp = ' . Element::class . '::classes(%node)) ? \' class="\' . implode( \' \', $ʟ_tmp ) . \'"\' : "" %line;',
-            $this->args,
+            'echo \'' . $this->renderedString . '\' %line;',
             $this->position,
         );
     }

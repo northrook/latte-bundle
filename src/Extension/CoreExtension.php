@@ -5,6 +5,7 @@ namespace Northrook\Latte\Extension;
 use Latte;
 use Northrook\Latte\Nodes\ClassNode;
 use Northrook\Latte\Nodes\IdNode;
+use Northrook\Latte\Nodes\InlineStringableNode;
 
 final class CoreExtension extends Latte\Extension
 {
@@ -12,6 +13,7 @@ final class CoreExtension extends Latte\Extension
         return [
             'n:id'    => [ IdNode::class, 'create' ],
             'n:class' => [ ClassNode::class, 'create' ],
+            'inline'  => [ InlineStringableNode::class, 'create' ],
         ];
     }
 

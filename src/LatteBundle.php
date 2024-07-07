@@ -7,6 +7,7 @@ use Northrook\Core\Env;
 use Northrook\Core\Trait\PropertyAccessor;
 use Northrook\Latte\Compiler\TemplateParser;
 use Northrook\Latte\Extension\CoreExtension;
+use Northrook\Latte\Extension\FormatterExtension;
 use Northrook\Logger\Log;
 use Northrook\Support\File;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -51,7 +52,7 @@ final class LatteBundle
     ) {
         $this->stopwatch ??= new Stopwatch( true );
         $this->setTemplateDirectories( $templateDirectories );
-        $this->addExtension( ... [ new CoreExtension(), ... $extensions ] );
+        $this->addExtension( ... [ new CoreExtension(), new FormatterExtension(), ... $extensions ] );
         $this->globalVariables = $globalVariables;
         $this->preprocessors   = $preprocessors;
         $this->postprocessors  = $postprocessors;

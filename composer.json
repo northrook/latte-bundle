@@ -24,7 +24,8 @@
     "northrook/cache": "dev-main",
     "northrook/html-element": "dev-main",
     "northrook/support": "dev-main",
-    "northrook/minify": "dev-main"
+    "northrook/minify": "dev-main",
+    "northrook/content-formatter": "dev-main"
   },
   "require-dev": {
     "phpstan/phpstan": " @stable",
