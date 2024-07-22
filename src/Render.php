@@ -9,7 +9,7 @@ use Northrook\Core\Trait\SingletonClass;
 use Northrook\Logger\Log;
 use Northrook\Minify;
 use Symfony\Component\Stopwatch\Stopwatch;
-use function Northrook\Core\Function\normalizePath;
+use function Northrook\normalizePath;
 
 final class Render
 {

@@ -5,16 +5,16 @@ namespace Northrook\Latte;
 use Latte;
 use Northrook\Core\Env;
 use Northrook\Core\Trait\PropertyAccessor;
+use Northrook\Filesystem\File;
 use Northrook\Latte\Compiler\TemplateParser;
 use Northrook\Latte\Extension\CoreExtension;
 use Northrook\Latte\Extension\FormatterExtension;
 use Northrook\Logger\Log;
-use Northrook\Support\File;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Stopwatch\Stopwatch;
-use function Northrook\Core\Function\normalizeKey;
-use function Northrook\Core\Function\normalizePath;
+use function Northrook\normalizeKey;
+use function Northrook\normalizePath;
 
 /**
  * @property-read Stopwatch $stopwatch

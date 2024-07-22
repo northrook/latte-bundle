@@ -3,7 +3,7 @@
 namespace Northrook\Latte\Extension;
 
 use Latte;
-use Northrook\ContentFormatter\Format;
+use Northrook\HTML\Format;
 
 final class FormatterExtension extends Latte\Extension
 {
