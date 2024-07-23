@@ -13,6 +13,7 @@ use Northrook\Logger\Log;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Contracts\Cache\CacheInterface;
 use function Northrook\normalizeKey;
 use function Northrook\normalizePath;
 
@@ -40,15 +41,15 @@ final class LatteBundle
     private array $templateDirectories = [];
 
     public function __construct(
-        public readonly string $projectDirectory,
-        public readonly string $cacheDirectory,
-        string | array         $templateDirectories = [],
-        array                  $extensions = [],
-        array                  $globalVariables = [],
-        array                  $preprocessors = [],
-        array                  $postprocessors = [],
-        private ?Stopwatch     $stopwatch = null,
-        public ?bool           $autoRefresh = null,
+        public readonly string  $projectDirectory,
+        public readonly string  $cacheDirectory,
+        string | array          $templateDirectories = [],
+        array                   $extensions = [],
+        array                   $globalVariables = [],
+        array                   $preprocessors = [],
+        array                   $postprocessors = [],
+        private ?Stopwatch      $stopwatch = null,
+        public ?bool            $autoRefresh = null,
     ) {
         $this->stopwatch ??= new Stopwatch( true );
         $this->setTemplateDirectories( $templateDirectories );

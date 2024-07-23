@@ -33,14 +33,14 @@ final class InlineStringableNode extends StatementNode
     /**
      * @throws CompileException
      */
-    public static function create( Tag $tag ) : RenderNode {
+    public static function create( Tag $tag ) : InlineStringableNode {
 
         // Debug::dumpOnExit( $tag );
 
-        $node       = new RenderNode();
+        $node       = new InlineStringableNode();
         $node->args = $tag->parser->parseArguments();
 
-        $callable = trim( $tag->parser->text, ' \n\r\t\v\0()' );
+        $callable = trim( $tag->parser->text, " \n\r\t\v\0()" );
 
         if ( is_callable( $callable ) &&
              $called = ( $callable )() instanceof HtmlStringable ) {

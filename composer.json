@@ -28,6 +28,7 @@
   },
   "require-dev": {
     "phpstan/phpstan": " @stable",
-    "northrook/dev-env": "dev-main"
+    "northrook/dev-env": "dev-main",
+    "symfony/cache": "^7.1"
   }
 }

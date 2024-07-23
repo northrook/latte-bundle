@@ -3,6 +3,9 @@
 namespace Northrook\Latte\Extension;
 
 use Latte;
+use Latte\Runtime\Html;
+use Northrook\CacheManager;
+use Northrook\Latte\Nodes\CacheNode;
 use Northrook\Latte\Nodes\ClassNode;
 use Northrook\Latte\Nodes\IdNode;
 use Northrook\Latte\Nodes\InlineStringableNode;
@@ -23,7 +26,12 @@ final class CoreExtension extends Latte\Extension
                 echo $string;
             },
             'path' => [ $this, 'encodeString' ],
+            'html' => [ $this, 'htmlString' ],
         ];
+    }
+
+    public function htmlString( string $string ) : Html {
+        return new Html( $string );
     }
 
     public function getFunctions() : array {
