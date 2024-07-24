@@ -13,16 +13,13 @@ use Northrook\Logger\Log;
 use Northrook\Minify;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use function Northrook\Cache\memoize;
 use function preg_replace;
 use function str_replace;
 use function trim;
-use const Northrook\Cache\FOREVER;
 
 final class Loader implements Latte\Loader
 {
     public const LATTE_TAGS_CACHE_KEY = 'northrook-latte-loader-n-tag-cache';
-    public const LATTE_TAGS_CACHE_TTL = FOREVER;
 
     private ?string $baseDirectory = null;
 
@@ -31,12 +28,12 @@ final class Loader implements Latte\Loader
     public bool $parsePreprocessors = true;
 
     /**
-     * @param Latte\Extension[]  $extensions
-     * @param TemplateParser[]   $preprocessors
+     * @param TemplateParser[]  $preprocessors
+     * @param array             $latteNodeTags
      */
     public function __construct(
-        private readonly array $extensions = [],
         private readonly array $preprocessors = [],
+        private readonly array $latteNodeTags = [],
     ) {}
 
     /**
@@ -219,7 +216,7 @@ final class Loader implements Latte\Loader
     private function handleLatteTags() : Loader {
 
         // Match all found tags
-        foreach ( $this->getLatteTags() as $tag ) {
+        foreach ( $this->latteNodeTags as $tag ) {
             $this->content = preg_replace_callback(
                 pattern  : "#$tag=\"(.*?)\"#s",
                 callback : static function ( array $match ) use ( $tag ) {
@@ -233,41 +230,4 @@ final class Loader implements Latte\Loader
 
         return $this;
     }
-
-    /**
-     * # Return a list of registered Latte `n:` tags
-     *
-     * @return array
-     */
-    private function getLatteTags() : array {
-        return memoize(
-            callback    : static function ( array $extensions ) {
-
-                // Tags not visible in Latte\Extension
-                $tags = [ 'n:if' ];
-
-                // Get all tags from all provided extensions
-                foreach ( $extensions as $extension ) {
-                    // Append keys
-                    $tags += array_keys( $extension->getTags() );
-                }
-
-                // Only keep n: tags
-                $tags = array_filter( $tags, static fn ( $tag ) => str_starts_with( $tag, 'n:' ) );
-
-                // Deduplicate tags
-                $tags = array_flip( array_flip( $tags ) );
-
-                // For debugging
-                Log::info( "Latte Loader: found {count} tags.", [ 'count' => count( $tags ) ] );
-
-                // Reset the index and return
-                return array_values( $tags );
-            },
-            arguments   : [ $this->extensions ],
-            key         : Loader::LATTE_TAGS_CACHE_KEY,
-            persistence : Loader::LATTE_TAGS_CACHE_TTL,
-        );
-    }
-
 }

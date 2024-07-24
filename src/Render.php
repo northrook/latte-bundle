@@ -135,7 +135,7 @@ final class Render
 
         $template = normalizePath( $template );
 
-        if ( str_starts_with( $template, $this->projectDirectory ) && file_exists( $template ) ) {
+        if ( \str_starts_with( $template, $this->projectDirectory ) && \file_exists( $template ) ) {
             Log::debug( "Render::load was provided a full, valid template path: $template" );
             return $template;
         }
@@ -143,14 +143,14 @@ final class Render
         foreach ( $this->templateDirectories as $directory ) {
 
 
-            if ( str_starts_with( $template, $directory ) && file_exists( $directory ) ) {
+            if ( \str_starts_with( $template, $directory ) && file_exists( $directory ) ) {
                 return $template;
             }
 
 
             $path = $directory . DIRECTORY_SEPARATOR . $template;
 
-            if ( file_exists( $path ) ) {
+            if ( \file_exists( $path ) ) {
                 return $path;
             }
         }
