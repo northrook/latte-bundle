@@ -17,10 +17,6 @@ use Symfony\Contracts\Cache\CacheInterface;
 use function Northrook\normalizeKey;
 use function Northrook\normalizePath;
 
-/**
- * @property-read Stopwatch $stopwatch
- * @property-read ?int      $cacheTTL
- */
 final class LatteBundle
 {
     use PropertyAccessor;
@@ -41,28 +37,32 @@ final class LatteBundle
     private array $templateDirectories = [];
 
     public function __construct(
-        public readonly string  $projectDirectory,
-        public readonly string  $cacheDirectory,
-        string | array          $templateDirectories = [],
-        array                   $extensions = [],
-        array                   $globalVariables = [],
-        array                   $preprocessors = [],
-        array                   $postprocessors = [],
-        private ?Stopwatch      $stopwatch = null,
-        public ?bool            $autoRefresh = null,
+        public readonly string $projectDirectory,
+        public readonly string $cacheDirectory,
+        // string | array          $templateDirectories = [],
+        // array                   $extensions = [],
+        // array                   $globalVariables = [],
+        // array                   $preprocessors = [],
+        // array                   $postprocessors = [],
+        private ?Stopwatch     $stopwatch = null,
+        public ?bool           $autoRefresh = null,
     ) {
         $this->stopwatch ??= new Stopwatch( true );
-        $this->setTemplateDirectories( $templateDirectories );
-        $this->addExtension( ... [ new CoreExtension(), new FormatterExtension(), ... $extensions ] );
-        $this->globalVariables = $globalVariables;
-        $this->preprocessors   = $preprocessors;
-        $this->postprocessors  = $postprocessors;
+        // $this->setTemplateDirectories( $templateDirectories );
+        $this->addExtension(
+            ... [
+                    new CoreExtension(), new FormatterExtension(),
+                    // , ... $extensions
+                ],
+        );
+        // $this->globalVariables = $globalVariables;
+        // $this->preprocessors   = $preprocessors;
+        // $this->postprocessors  = $postprocessors;
     }
 
     public function __get( string $property ) : int | null | Latte\Engine | Stopwatch {
         return match ( $property ) {
             'stopwatch' => $this->stopwatch,
-            'cacheTTL'  => $this->cacheTTL,
         };
     }
 
