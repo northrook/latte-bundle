@@ -4,8 +4,6 @@ namespace Northrook\Latte\Extension;
 
 use Latte;
 use Latte\Runtime\Html;
-use Northrook\CacheManager;
-use Northrook\Latte\Nodes\CacheNode;
 use Northrook\Latte\Nodes\ClassNode;
 use Northrook\Latte\Nodes\IdNode;
 use Northrook\Latte\Nodes\InlineStringableNode;
