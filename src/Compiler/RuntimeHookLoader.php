@@ -6,6 +6,7 @@ namespace Northrook\Latte\Compiler;
 
 use Northrook\Cache;
 use Stringable;
+use function Northrook\Cache\memoize;
 
 final class RuntimeHookLoader
 {
@@ -36,7 +37,7 @@ final class RuntimeHookLoader
             return $this->hooks[ $hook ] ?? null;
         }
 
-        return Cache::memoize(
+        return memoize(
             static fn ( $hook ) : string => (string) ( is_callable( $hook ) ? $hook() : $hook ),
             [ $this->hooks[ $hook ] ],
         );

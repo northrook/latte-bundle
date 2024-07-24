@@ -5,24 +5,24 @@ declare( strict_types = 1 );
 namespace Northrook\Latte;
 
 use Latte;
-use Northrook\Cache;
 use Northrook\Core\Attribute\EntryPoint;
 use Northrook\Core\Attribute\ExitPoint;
 use Northrook\Latte\Compiler\MissingTemplateException;
 use Northrook\Latte\Compiler\TemplateParser;
 use Northrook\Logger\Log;
 use Northrook\Minify;
-use Northrook\Support\Str;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use function Northrook\Cache\memoize;
 use function preg_replace;
 use function str_replace;
 use function trim;
+use const Northrook\Cache\FOREVER;
 
 final class Loader implements Latte\Loader
 {
     public const LATTE_TAGS_CACHE_KEY = 'northrook-latte-loader-n-tag-cache';
-    public const LATTE_TAGS_CACHE_TTL = Cache::DAY;
+    public const LATTE_TAGS_CACHE_TTL = FOREVER;
 
     private ?string $baseDirectory = null;
 
@@ -224,7 +224,7 @@ final class Loader implements Latte\Loader
                 pattern  : "#$tag=\"(.*?)\"#s",
                 callback : static function ( array $match ) use ( $tag ) {
                     // Variables in n:tags must not be bracketed, trim that and any excess whitespace
-                    $value = Str::trimWhitespace( trim( $match[ 1 ], " {}" ) );
+                    $value = Minify::squish( trim( $match[ 1 ], " {}" ) );
                     return $value ? "$tag=\"$value\"" : null;
                 },
                 subject  : $this->content,
@@ -240,7 +240,7 @@ final class Loader implements Latte\Loader
      * @return array
      */
     private function getLatteTags() : array {
-        return Cache::memoize(
+        return memoize(
             callback    : static function ( array $extensions ) {
 
                 // Tags not visible in Latte\Extension

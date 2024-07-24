@@ -65,11 +65,6 @@ final class LatteBundle
             'stopwatch' => $this->stopwatch,
         };
     }
-
-    public function setCacheTTL( ?int $seconds ) : void {
-        $this->cacheTTL = $seconds;
-    }
-
     // Render ---------------------------------------
 
     /**
