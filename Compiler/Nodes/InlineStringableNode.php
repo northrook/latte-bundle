@@ -1,8 +1,10 @@
-<?php declare ( strict_types = 1 );
+<?php
 
-namespace Northrook\Latte\Nodes;
+declare ( strict_types = 1 );
 
-use Generator;
+namespace Northrook\Latte\Compiler\Nodes;
+
+
 use Latte\CompileException;
 use Latte\Compiler;
 use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
@@ -61,7 +63,7 @@ final class InlineStringableNode extends StatementNode
         );
     }
 
-    public function &getIterator() : Generator {
+    public function &getIterator() : \Generator {
         yield $this->args;
     }
 }

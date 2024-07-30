@@ -10,7 +10,6 @@ use Northrook\Core\Attribute\ExitPoint;
 use Northrook\Minify;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Contracts\Cache\CacheInterface;
 use function preg_replace;
 use function str_replace;
 use function trim;
@@ -29,7 +28,6 @@ final class Loader implements Latte\Loader
      */
     public function __construct(
         private readonly array           $preprocessors = [],
-        private readonly ?CacheInterface $loaderCache = null,
     ) {}
 
     /**
