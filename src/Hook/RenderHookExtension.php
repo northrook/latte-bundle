@@ -1,9 +1,8 @@
 <?php
 
-namespace Northrook\Latte\Extension;
+namespace Northrook\Latte\Hook;
 
 use Latte;
-use Northrook\Latte\Compiler\RuntimeHookLoader;
 use Northrook\Logger\Log;
 
 final class RenderHookExtension extends Latte\Extension

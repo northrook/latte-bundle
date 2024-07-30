@@ -2,11 +2,10 @@
 
 declare( strict_types = 1 );
 
-namespace Northrook\Latte\Compiler;
+namespace Northrook\Latte\Hook;
 
-use Northrook\Cache;
 use Stringable;
-use function Northrook\Cache\memoize;
+use function Northrook\memoize;
 
 final class RuntimeHookLoader
 {

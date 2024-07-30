@@ -20,9 +20,6 @@ final class CoreExtension extends Latte\Extension
 
     public function getFilters() : array {
         return [
-            'echo' => static function ( $string ) {
-                echo $string;
-            },
             'path' => [ $this, 'encodeString' ],
             'html' => [ $this, 'htmlString' ],
         ];
@@ -41,9 +38,6 @@ final class CoreExtension extends Latte\Extension
                     print_r( $arg );
                 }
                 echo '</pre>';
-            },
-            'var_dump'    => static function ( ...$args ) {
-                var_dump( ... $args );
             },
             'dump'        => static function ( ...$args ) {
                 foreach ( $args as $arg ) {
@@ -70,10 +64,5 @@ final class CoreExtension extends Latte\Extension
         // TODO: Add support for centralized date and time formats
 
         return date( $format ?? 'Y-m-d H:i:s', $timestamp );
-    }
-
-    // TODO : This will be a dedicated component
-    public function encodeString( string $string ) : string {
-        return '<data value="' . base64_encode( $string ) . '"></data>';
     }
 }

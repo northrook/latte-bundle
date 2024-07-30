@@ -2,25 +2,21 @@
 
 declare( strict_types = 1 );
 
-namespace Northrook\Latte;
+namespace Northrook\Latte\Compiler;
 
 use Latte;
 use Northrook\Core\Attribute\EntryPoint;
 use Northrook\Core\Attribute\ExitPoint;
-use Northrook\Latte\Compiler\MissingTemplateException;
-use Northrook\Latte\Compiler\TemplateParser;
-use Northrook\Logger\Log;
 use Northrook\Minify;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Contracts\Cache\CacheInterface;
 use function preg_replace;
 use function str_replace;
 use function trim;
 
 final class Loader implements Latte\Loader
 {
-    public const LATTE_TAGS_CACHE_KEY = 'northrook-latte-loader-n-tag-cache';
-
     private ?string $baseDirectory = null;
 
     private string $content;
@@ -32,8 +28,8 @@ final class Loader implements Latte\Loader
      * @param array             $latteNodeTags
      */
     public function __construct(
-        private readonly array $preprocessors = [],
-        private readonly array $latteNodeTags = [],
+        private readonly array           $preprocessors = [],
+        private readonly ?CacheInterface $loaderCache = null,
     ) {}
 
     /**
@@ -115,10 +111,10 @@ final class Loader implements Latte\Loader
         $this->inlineNamespacedElements()
 
             // Safely handle object operators
-             ->protectOperators()
+             ->protectOperators();
 
             // Ensure proper handling of Latte tags and their variables
-             ->handleLatteTags();
+            //  ->handleLatteTags();
 
         // Minify the initial template string
         //  ->compressContent();
