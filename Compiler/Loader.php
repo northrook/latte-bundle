@@ -20,15 +20,17 @@ final class Loader implements Latte\Loader
 
     private string $content;
 
-    public bool $parsePreprocessors = true;
+    private readonly array $preprocessors;
+    public bool            $parsePreprocessors = true;
 
     /**
      * @param TemplateParser[]  $preprocessors
-     * @param array             $latteNodeTags
      */
     public function __construct(
-        private readonly array           $preprocessors = [],
-    ) {}
+        TemplateParser           ...$preprocessors,
+    ) {
+        $this->preprocessors = $preprocessors;
+    }
 
     /**
      * Returns unique identifier for caching.
@@ -111,8 +113,8 @@ final class Loader implements Latte\Loader
             // Safely handle object operators
              ->protectOperators();
 
-            // Ensure proper handling of Latte tags and their variables
-            //  ->handleLatteTags();
+        // Ensure proper handling of Latte tags and their variables
+        //  ->handleLatteTags();
 
         // Minify the initial template string
         //  ->compressContent();
