@@ -12,7 +12,6 @@ use Latte\Compiler\NodeTraverser;
 
 abstract class CompilerPassExtension extends Latte\Extension
 {
-
     /**
      * @return callable[]
      */

@@ -46,23 +46,16 @@ final class OptimizerExtension extends CompilerPassExtension
     }
 
     public function whitespaceFixer( Node $node ) : mixed {
-
-
         if ( $node instanceof TextNode && ( $this->normalizeWhitespace || $node->isWhitespace() ) ) {
-            dump( $node );
-
             $node->content = \preg_replace( '/(\v)+/', '$1', $node->content );
         }
-
         return $node;
     }
 
     public function templateCompressor( Node $node ) : mixed {
-
         if ( $node instanceof TextNode ) {
             $node->content = \preg_replace( '/(\s)+/', ' ', $node->content );
         }
-
         return $node;
     }
 }
