@@ -37,7 +37,6 @@ final class ButtonExtension extends CompilerPassExtension
         if ( $node instanceof ElementNode && $node->is( 'button' ) ) {
 
             if ( $node->getAttribute( 'type' ) ) {
-                dump( $node->getAttribute( 'type' ) );
                 return NodeTraverser::DontTraverseChildren;
             }
 

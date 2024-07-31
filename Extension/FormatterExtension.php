@@ -7,6 +7,7 @@ use Latte\Runtime\Html;
 use Latte\Runtime\HtmlStringable;
 use Northrook\HTML\Format;
 use Northrook\HTML\Formatter\Newline;
+use Northrook\Latte\Compiler\LatteExtensionTrait;
 
 final class FormatterExtension extends Latte\Extension
 {

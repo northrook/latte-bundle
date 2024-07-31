@@ -1,6 +1,6 @@
 <?php
 
-namespace Northrook\Latte\Extension;
+namespace Northrook\Latte\Compiler;
 
 trait LatteExtensionTrait
 {
