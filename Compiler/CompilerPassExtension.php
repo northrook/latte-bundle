@@ -21,7 +21,7 @@ abstract class CompilerPassExtension extends Latte\Extension
     }
 
     final public function getPasses() : array {
-        return [ 'precompile' => [ $this, 'templateNodeTraverser' ] ];
+        return [ $this::class => [ $this, 'templateNodeTraverser' ] ];
     }
 
     final public function templateNodeTraverser( TemplateNode $node ) : void {

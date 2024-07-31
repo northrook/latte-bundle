@@ -5,16 +5,48 @@ declare( strict_types = 1 );
 namespace Northrook\Latte\Extension;
 
 use Latte;
+use Latte\Compiler\Node;
+use Latte\Compiler\Nodes\Html\ElementNode;
+use Latte\Compiler\Nodes\Php\ExpressionNode;
+use Latte\Compiler\NodeTraverser;
+use Northrook\Latte\Compiler\CompilerPassExtension;
+use Northrook\Latte\Compiler\NodeCompilerTrait;
 use Northrook\Latte\Compiler\Nodes\ClassNode;
 use Northrook\Latte\Compiler\Nodes\IdNode;
 
-final class ElementExtension extends Latte\Extension
+final class ElementExtension extends CompilerPassExtension
 {
+    use NodeCompilerTrait;
 
     public function getTags() : array {
         return [
             'n:id'    => [ IdNode::class, 'create' ],
             'n:class' => [ ClassNode::class, 'create' ],
         ];
+    }
+
+    public function traverseNodes() : array {
+        return [
+            [ $this, 'buttonTypeFixer' ],
+        ];
+    }
+
+    public function buttonTypeFixer( Node $node ) : mixed {
+
+        if ( $node instanceof ExpressionNode ) {
+            return NodeTraverser::DontTraverseChildren;
+        }
+
+        if ( $node instanceof ElementNode && $node->is( 'button' ) ) {
+
+            if ( $node->getAttribute( 'type' ) ) {
+                return NodeTraverser::DontTraverseChildren;
+            }
+
+            $node->attributes->append( $this::attributeNode( 'type', 'button' ) );
+            $node->attributes->children = $this::sortAttributes( $node->attributes );
+        }
+
+        return $node;
     }
 }

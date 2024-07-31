@@ -23,20 +23,20 @@ final class OptimizerExtension extends CompilerPassExtension
     use NodeCompilerTrait;
 
     /**
-     * @param bool  $normalizeWhitespace  Fixes repeated vertical white spaces outside of Nodes
+     * - Fixes repeated vertical white spaces outside of Nodes
+     *
+     * @param bool  $normalizeWhitespace  Fixes repeated vertical spaces everywhere
      * @param bool  $compress             Squishes the entire template, smallest possible result
      */
     public function __construct(
-        public readonly bool $normalizeWhitespace = true,
+        public readonly bool $normalizeWhitespace = false,
         public readonly bool $compress = false,
     ) {}
 
     public function traverseNodes() : array {
-        $passes = [];
-
-        if ( $this->normalizeWhitespace ) {
-            $passes[ 'normalizeWhitespace' ] = [ $this, 'whitespaceFixer' ];
-        }
+        $passes = [
+            'whitespaceFixer' => [ $this, 'whitespaceFixer' ],
+        ];
 
         if ( $this->compress ) {
             $passes[ 'compress' ] = [ $this, 'templateCompressor' ];
@@ -47,7 +47,10 @@ final class OptimizerExtension extends CompilerPassExtension
 
     public function whitespaceFixer( Node $node ) : mixed {
 
-        if ( $node instanceof TextNode && $node->isWhitespace() ) {
+
+        if ( $node instanceof TextNode && ( $this->normalizeWhitespace || $node->isWhitespace() ) ) {
+            dump( $node );
+
             $node->content = \preg_replace( '/(\v)+/', '$1', $node->content );
         }
 
