@@ -1,5 +1,7 @@
 <?php
 
+declare ( strict_types = 1 );
+
 namespace Northrook\Latte\Compiler;
 
 use Latte\Compiler\Node;
@@ -15,12 +17,13 @@ trait NodeCompilerTrait
 {
 
     final protected function isElement( Node $node, ?string $name = null ) : bool {
+
         if ( !$node instanceof ElementNode ) {
             return false;
         }
 
         if ( $name && $node->name !== $name ) {
-            return $node->name === $name;
+            return false;
         }
 
         return true;

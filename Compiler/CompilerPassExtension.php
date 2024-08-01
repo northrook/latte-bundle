@@ -1,7 +1,8 @@
 <?php
 
-namespace Northrook\Latte\Compiler;
+declare ( strict_types = 1 );
 
+namespace Northrook\Latte\Compiler;
 
 use Latte;
 use Latte\Compiler\Node;

@@ -2,10 +2,7 @@
 
 declare ( strict_types = 1 );
 
-
 namespace Northrook\Latte\Compiler\Nodes;
-
-
 
 use Latte\CompileException;
 use Latte\Compiler;
@@ -14,7 +11,6 @@ use Latte\Compiler\Nodes\StatementNode;
 use Latte\Compiler\PrintContext;
 use Latte\Compiler\Tag;
 use Northrook\HTML\Element;
-
 
 /**
  * Parsing `n:class` attributes for the {@see  Compiler\TemplateParser}

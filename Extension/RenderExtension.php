@@ -7,8 +7,6 @@ namespace Northrook\Latte\Extension;
 use Latte;
 use Latte\Runtime\Html;
 use Latte\Runtime\HtmlStringable;
-use Northrook\Latte\Compiler\Nodes\ClassNode;
-use Northrook\Latte\Compiler\Nodes\IdNode;
 use Northrook\Latte\Compiler\Nodes\InlineStringableNode;
 use function dump, dd, ob_get_clean, ob_start, print_r;
 

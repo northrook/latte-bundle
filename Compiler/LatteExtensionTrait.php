@@ -1,5 +1,7 @@
 <?php
 
+declare( strict_types = 1 );
+
 namespace Northrook\Latte\Compiler;
 
 trait LatteExtensionTrait
@@ -11,7 +13,6 @@ trait LatteExtensionTrait
      * @return array{condition: ?string, arguments: []}
      */
     final protected function getCallableArguments( mixed $arguments ) : array {
-
 
         // If the $arguments are empty, return null condition and empty arguments
         if ( !$arguments ) {

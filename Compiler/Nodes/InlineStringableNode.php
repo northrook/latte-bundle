@@ -4,7 +4,6 @@ declare ( strict_types = 1 );
 
 namespace Northrook\Latte\Compiler\Nodes;
 
-
 use Latte\CompileException;
 use Latte\Compiler;
 use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
@@ -12,7 +11,6 @@ use Latte\Compiler\Nodes\StatementNode;
 use Latte\Compiler\PrintContext;
 use Latte\Compiler\Tag;
 use Latte\Runtime\HtmlStringable;
-
 
 /**
  * Parsing `n:class` attributes for the {@see  Compiler\TemplateParser}
@@ -37,8 +35,6 @@ final class InlineStringableNode extends StatementNode
      */
     public static function create( Tag $tag ) : InlineStringableNode {
 
-        // Debug::dumpOnExit( $tag );
-
         $node       = new InlineStringableNode();
         $node->args = $tag->parser->parseArguments();
 
@@ -56,7 +52,6 @@ final class InlineStringableNode extends StatementNode
     }
 
     public function print( PrintContext $context ) : string {
-        // Debug::dumpOnExit( $context );
         return $context->format(
             'echo \'' . $this->renderedString . '\' %line;',
             $this->position,
