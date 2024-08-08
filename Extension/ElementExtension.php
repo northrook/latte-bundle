@@ -13,6 +13,7 @@ use Northrook\Latte\Compiler\CompilerPassExtension;
 use Northrook\Latte\Compiler\NodeCompilerTrait;
 use Northrook\Latte\Compiler\Nodes\ClassNode;
 use Northrook\Latte\Compiler\Nodes\IdNode;
+use Northrook\Logger\Log;
 
 final class ElementExtension extends CompilerPassExtension
 {
@@ -28,7 +29,28 @@ final class ElementExtension extends CompilerPassExtension
     public function traverseNodes() : array {
         return [
             [ $this, 'buttonTypeFixer' ],
+            [ $this, 'anchorReference' ],
         ];
+    }
+
+    public function anchorReference( Node $node ) : mixed {
+
+        if ( $node instanceof ExpressionNode ) {
+            return NodeTraverser::DontTraverseChildren;
+        }
+
+        if ( $node instanceof ElementNode && $node->is( 'a' ) ) {
+
+            // if ( $node->getAttribute( 'href' ) ) {
+            // TODO : Parse tne reference
+            // TODO : Look for innerContent, ensure conforms with user defaults
+            // }
+
+            // $node->attributes->append( $this::attributeNode( 'type', 'button' ) );
+            $node->attributes->children = $this::sortAttributes( $node->attributes );
+        }
+
+        return $node;
     }
 
     public function buttonTypeFixer( Node $node ) : mixed {
