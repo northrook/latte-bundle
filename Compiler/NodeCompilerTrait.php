@@ -11,6 +11,7 @@ use Latte\Compiler\Nodes\FragmentNode;
 use Latte\Compiler\Nodes\Html\AttributeNode;
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\TextNode;
+use Latte\Compiler\PrintContext;
 use Northrook\HTML\Element\Attributes;
 
 trait NodeCompilerTrait
@@ -28,6 +29,45 @@ trait NodeCompilerTrait
 
         return true;
     }
+
+
+    final protected function resolveNodeArguments(
+        PrintContext $context,
+        ElementNode  $node,
+    ) : array {
+        $attributes = [];
+        $variables  = [];
+        foreach ( $this->cleanNodeAttributes( $node ) as $node ) {
+            $name  = $this->nodeRawValue( $node->name?->print( $context ) );
+            $value = $this->nodeRawValue( $node->value?->print( $context ) );
+
+            if ( \str_starts_with( $name, '$' ) ) {
+                $variables[] = $name;
+            }
+            else {
+                $attributes[] = "'$name' => '$value'";
+            }
+        };
+        return [
+            '[' . \implode( ', ', $attributes ) . ']',
+            \implode( ', ', $variables ),
+        ];
+    }
+
+    /**
+     * @param ElementNode  $node
+     *
+     * @return AttributeNode[]
+     */
+    final protected function cleanNodeAttributes( ElementNode $node ) : array {
+        foreach ( $node->attributes->children as $index => $attribute ) {
+            if ( !$attribute instanceof AttributeNode ) {
+                unset( $node->attributes->children[ $index ] );
+            }
+        }
+        return $node->attributes->children;
+    }
+
 
     final protected static function attributeNode( string $name, ?string $value = null ) : AttributeNode {
         return new AttributeNode( static::text( $name ), static::text( $value ), '"' );
@@ -63,5 +103,24 @@ trait NodeCompilerTrait
         return $attributes;
     }
 
+
+    final protected function nodeRawValue( ?string $string ) : ?string {
+
+        if ( $string === null ) {
+            return null;
+        }
+
+        if ( \str_starts_with( $string, 'echo ' ) ) {
+            $string = \substr( $string, \strlen( 'echo ' ) );
+        }
+
+
+        if ( \str_starts_with( $string, 'LR\Filters' ) ) {
+            $string = \strstr( $string, '(' );
+            $string = \strchr( $string, ')', true );
+        }
+
+        return \trim( $string, " \n\r\t\v\0;()\"'" );
+    }
 
 }
