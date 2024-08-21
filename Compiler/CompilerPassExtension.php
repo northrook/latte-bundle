@@ -16,9 +16,7 @@ abstract class CompilerPassExtension extends Latte\Extension
     /**
      * @return callable[]
      */
-    public function traverseNodes() : array {
-        return [];
-    }
+    abstract public function traverseNodes() : array;
 
     final public function getPasses() : array {
         return [ $this::class => [ $this, 'templateNodeTraverser' ] ];

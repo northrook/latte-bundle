@@ -33,9 +33,11 @@ final class OptimizerExtension extends CompilerPassExtension
         public readonly bool $compress = false,
     ) {}
 
+
     public function traverseNodes() : array {
         $passes = [
-            'whitespaceFixer' => [ $this, 'whitespaceFixer' ],
+            'nodeWhitespaceFixer' => [ $this, 'nodeWhitespaceFixer' ],
+            'textWhitespaceFixer'     => [ $this, 'textWhitespaceFixer' ],
         ];
 
         if ( $this->compress ) {
@@ -45,14 +47,46 @@ final class OptimizerExtension extends CompilerPassExtension
         return $passes;
     }
 
-    public function whitespaceFixer( Node $node ) : mixed {
+
+    public function nodeWhitespaceFixer( Node $node ) : Node {
+
+        if ( !$node instanceof ElementNode || !$node->attributes->children ) {
+            return $node;
+        }
+
+        foreach ( $node->attributes->children as $index => $value ) {
+            if ( !$value instanceof TextNode ) {
+                continue;
+            }
+
+            if ( \str_contains( $value->content, "\n" ) ) {
+                $value->content = match ( $index ) {
+                    \array_key_last( $node->attributes->children ) => '',
+                    default                                        => ' '
+                };
+            }
+            elseif ( \str_contains( $value->content, " " ) ) {
+                $previous = $node->attributes->children[ $index - 1 ] ?? null;
+                if ( !$previous instanceof TextNode ) {
+                    $value->content = ' ';
+                }
+                else {
+                    $value->content = $previous->content === ' ' ? '' : ' ';
+                }
+            }
+        }
+
+        return $node;
+    }
+
+    public function textWhitespaceFixer( Node $node ) : Node {
         if ( $node instanceof TextNode && ( $this->normalizeWhitespace || $node->isWhitespace() ) ) {
             $node->content = \preg_replace( '/(\v)+/', '$1', $node->content );
         }
         return $node;
     }
 
-    public function templateCompressor( Node $node ) : mixed {
+    public function templateCompressor( Node $node ) : Node {
         if ( $node instanceof TextNode ) {
             $node->content = \preg_replace( '/(\s)+/', ' ', $node->content );
         }
