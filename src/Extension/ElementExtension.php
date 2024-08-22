@@ -4,16 +4,14 @@ declare( strict_types = 1 );
 
 namespace Northrook\Latte\Extension;
 
-use Latte;
 use Latte\Compiler\Node;
 use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Latte\Compiler\NodeTraverser;
 use Northrook\Latte\Compiler\CompilerPassExtension;
 use Northrook\Latte\Compiler\NodeCompilerTrait;
-use Northrook\Latte\Compiler\Nodes\ClassNode;
-use Northrook\Latte\Compiler\Nodes\IdNode;
-use Northrook\Logger\Log;
+use Northrook\Latte\Nodes\ClassNode;
+use Northrook\Latte\Nodes\IdNode;
 
 final class ElementExtension extends CompilerPassExtension
 {

@@ -2,7 +2,7 @@
 
 declare ( strict_types = 1 );
 
-namespace Northrook\Latte\Compiler\Nodes;
+namespace Northrook\Latte\Nodes;
 
 use Latte\CompileException;
 use Latte\Compiler;

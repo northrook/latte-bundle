@@ -7,8 +7,12 @@ namespace Northrook\Latte\Extension;
 use Latte;
 use Latte\Runtime\Html;
 use Latte\Runtime\HtmlStringable;
-use Northrook\Latte\Compiler\Nodes\InlineStringableNode;
-use function dump, dd, ob_get_clean, ob_start, print_r;
+use Northrook\Latte\Nodes\InlineStringableNode;
+use function dd;
+use function dump;
+use function ob_get_clean;
+use function ob_start;
+use function print_r;
 
 final class RenderExtension extends Latte\Extension
 {

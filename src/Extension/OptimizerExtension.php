@@ -4,29 +4,22 @@ declare( strict_types = 1 );
 
 namespace Northrook\Latte\Extension;
 
-use Latte;
 use Latte\Compiler\Node;
-use Latte\Compiler\NodeHelpers;
-use Latte\Compiler\Nodes\Html\AttributeNode;
 use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
-use Latte\Compiler\Nodes\Php\ExpressionNode;
-use Latte\Compiler\Nodes\TemplateNode;
 use Latte\Compiler\Nodes\TextNode;
-use Latte\Compiler\NodeTraverser;
-use Northrook\HTML\Element\Attributes;
 use Northrook\Latte\Compiler\CompilerPassExtension;
 use Northrook\Latte\Compiler\NodeCompilerTrait;
+use const Northrook\{EMPTY_STRING, WHITESPACE};
 
-final class OptimizerExtension extends CompilerPassExtension
-{
+final class OptimizerExtension extends CompilerPassExtension {
+
     use NodeCompilerTrait;
 
     /**
      * - Fixes repeated vertical white spaces outside of Nodes
      *
-     * @param bool  $normalizeWhitespace  Fixes repeated vertical spaces everywhere
-     * @param bool  $compress             Squishes the entire template, smallest possible result
+     * @param bool $normalizeWhitespace Fixes repeated vertical spaces everywhere
+     * @param bool $compress            Squishes the entire template, smallest possible result
      */
     public function __construct(
         public readonly bool $normalizeWhitespace = false,
@@ -37,7 +30,7 @@ final class OptimizerExtension extends CompilerPassExtension
     public function traverseNodes() : array {
         $passes = [
             'nodeWhitespaceFixer' => [ $this, 'nodeWhitespaceFixer' ],
-            'textWhitespaceFixer'     => [ $this, 'textWhitespaceFixer' ],
+            'textWhitespaceFixer' => [ $this, 'textWhitespaceFixer' ],
         ];
 
         if ( $this->compress ) {
@@ -48,30 +41,46 @@ final class OptimizerExtension extends CompilerPassExtension
     }
 
 
+    /**
+     * Fixes repeated whitespace in between element attributes.
+     *
+     * @param Node $node
+     *
+     * @return Node
+     */
     public function nodeWhitespaceFixer( Node $node ) : Node {
 
-        if ( !$node instanceof ElementNode || !$node->attributes->children ) {
+        // Bail if this isn't an ElementNode, or if the ElementNode has no attributes
+        if ( ! $node instanceof ElementNode || ! $node->attributes->children ) {
             return $node;
         }
 
+        // Loop though each attribute
         foreach ( $node->attributes->children as $index => $value ) {
-            if ( !$value instanceof TextNode ) {
+
+            // Ignore anything that cannot contain a whitespace character
+            if ( ! $value instanceof TextNode ) {
                 continue;
             }
 
+            // Fix line breaks and surrounding whitespace
             if ( \str_contains( $value->content, "\n" ) ) {
                 $value->content = match ( $index ) {
-                    \array_key_last( $node->attributes->children ) => '',
-                    default                                        => ' '
+                    \array_key_last( $node->attributes->children ) => EMPTY_STRING,
+                    default                                        => WHITESPACE
                 };
             }
-            elseif ( \str_contains( $value->content, " " ) ) {
+            // Fix repeated whitespace
+            elseif ( \str_contains( $value->content, WHITESPACE ) ) {
+                // Get the preceding node
                 $previous = $node->attributes->children[ $index - 1 ] ?? null;
-                if ( !$previous instanceof TextNode ) {
-                    $value->content = ' ';
+                if ( ! $previous instanceof TextNode ) {
+                    // Normalize however many spaces to one, if this node follows an attribute
+                    $value->content = WHITESPACE;
                 }
                 else {
-                    $value->content = $previous->content === ' ' ? '' : ' ';
+                    // If this node follows a text node, only add whitespace if the previous is empty
+                    $value->content = $previous->content === WHITESPACE ? EMPTY_STRING : WHITESPACE;
                 }
             }
         }
@@ -88,7 +97,7 @@ final class OptimizerExtension extends CompilerPassExtension
 
     public function templateCompressor( Node $node ) : Node {
         if ( $node instanceof TextNode ) {
-            $node->content = \preg_replace( '/(\s)+/', ' ', $node->content );
+            $node->content = \preg_replace( '/(\s)+/', WHITESPACE, $node->content );
         }
         return $node;
     }

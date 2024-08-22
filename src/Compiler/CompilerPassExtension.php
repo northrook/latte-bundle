@@ -5,9 +5,6 @@ declare ( strict_types = 1 );
 namespace Northrook\Latte\Compiler;
 
 use Latte;
-use Latte\Compiler\Node;
-use Latte\Compiler\Nodes\Html\ElementNode;
-use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Latte\Compiler\Nodes\TemplateNode;
 use Latte\Compiler\NodeTraverser;
 
