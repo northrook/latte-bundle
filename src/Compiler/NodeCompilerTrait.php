@@ -13,13 +13,13 @@ use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Compiler\PrintContext;
 use Northrook\HTML\Element\Attributes;
+use const Northrook\WHITESPACE;
 
-trait NodeCompilerTrait
-{
+trait NodeCompilerTrait {
 
     final protected function isElement( Node $node, ?string $name = null ) : bool {
 
-        if ( !$node instanceof ElementNode ) {
+        if ( ! $node instanceof ElementNode ) {
             return false;
         }
 
@@ -33,7 +33,7 @@ trait NodeCompilerTrait
 
     final protected function resolveNodeArguments(
         PrintContext $context,
-        ElementNode  $node,
+        ElementNode $node,
     ) : array {
         $attributes = [];
         $variables  = [];
@@ -47,7 +47,7 @@ trait NodeCompilerTrait
             else {
                 $attributes[] = "'$name' => '$value'";
             }
-        };
+        }
         return [
             '[' . \implode( ', ', $attributes ) . ']',
             \implode( ', ', $variables ),
@@ -55,13 +55,13 @@ trait NodeCompilerTrait
     }
 
     /**
-     * @param ElementNode  $node
+     * @param ElementNode $node
      *
      * @return AttributeNode[]
      */
     final protected function cleanNodeAttributes( ElementNode $node ) : array {
         foreach ( $node->attributes->children as $index => $attribute ) {
-            if ( !$attribute instanceof AttributeNode ) {
+            if ( ! $attribute instanceof AttributeNode ) {
                 unset( $node->attributes->children[ $index ] );
             }
         }
@@ -69,7 +69,14 @@ trait NodeCompilerTrait
     }
 
 
-    final protected static function attributeNode( string $name, ?string $value = null ) : AttributeNode {
+    final protected static function attributeNode(
+        string $name,
+        string | array | null $value = null,
+        string $separator = WHITESPACE
+    ) : AttributeNode {
+        if ( \is_array( $value ) ) {
+            $value = \implode( $separator, \array_filter( $value ) );
+        }
         return new AttributeNode( static::text( $name ), static::text( $value ), '"' );
     }
 
@@ -78,7 +85,7 @@ trait NodeCompilerTrait
     }
 
     /**
-     * @param FragmentNode|AreaNode[]  $attributes
+     * @param FragmentNode|AreaNode[] $attributes
      *
      * @return AreaNode[]
      */
