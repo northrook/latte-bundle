@@ -2,7 +2,7 @@
 
 declare( strict_types = 1 );
 
-namespace Northrook\Latte;
+namespace Northrook;
 
 use Latte\Engine;
 use Latte\Extension;
@@ -20,10 +20,10 @@ use function array_map, file_exists, in_array, is_object, spl_object_id;
 /**
  * @author Martin Nielsen <mn@northrook.com>
  */
-class Environment
+class Latte
 {
 
-    private static Environment           $environment;
+    private static Latte                 $environment;
     protected LoaderInterface | Closure  $loader;
     private readonly TemplateChainLoader $templateLoader;
     private Engine                       $engine;
@@ -47,7 +47,7 @@ class Environment
         $this->setStaticAccessor();
     }
 
-    public static function template(
+    public static function render(
         string         $template,
         object | array $parameters = [],
         ?string        $block = null,
