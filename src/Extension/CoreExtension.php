@@ -14,7 +14,7 @@ use function ob_get_clean;
 use function ob_start;
 use function print_r;
 
-final class RenderExtension extends Latte\Extension
+final class CoreExtension extends Latte\Extension
 {
 
     public function getTags() : array {
@@ -42,13 +42,13 @@ final class RenderExtension extends Latte\Extension
                 return new Html( ob_get_clean() );
             },
             'debug_dump'  => static function ( ...$args ) : HtmlStringable {
-                ob_start();
+                \ob_start();
                 foreach ( $args as $arg ) {
-                    dump( $arg );
+                    \dump( $arg );
                 }
-                return new Html( ob_get_clean() );
+                return new Html( \ob_get_clean() );
             },
-            'debug_dd'    => static fn ( ...$args ) => dd( $args ),
+            'debug_dd'    => static fn ( ...$args ) => \dd( $args ),
         ];
     }
 
@@ -67,6 +67,6 @@ final class RenderExtension extends Latte\Extension
         // TODO: Add support for date and time formats
         // TODO: Add support for centralized date and time formats
 
-        return new Html( date( $format ?? 'Y-m-d H:i:s', $timestamp ) );
+        return new Html( \date( $format ?? 'Y-m-d H:i:s', $timestamp ) );
     }
 }

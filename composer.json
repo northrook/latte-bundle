@@ -21,10 +21,10 @@
     "latte/latte": "@stable",
     "northrook/core": "dev-main",
     "northrook/filesystem": "dev-main",
-    "northrook/html": "dev-main",
     "northrook/minify": "dev-main",
-    "northrook/latte-symfony-cache": "dev-main",
-    "northrook/latte-environment": "dev-main"
+    "northrook/html-element": "dev-main",
+    "northrook/html-formatter": "dev-main",
+    "northrook/latte-symfony-cache": "dev-main"
   },
   "require-dev": {
     "phpstan/phpstan": " @stable",

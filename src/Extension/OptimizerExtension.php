@@ -4,30 +4,40 @@ declare( strict_types = 1 );
 
 namespace Northrook\Latte\Extension;
 
+use Latte;
 use Latte\Compiler\Node;
 use Latte\Compiler\Nodes\Html\ElementNode;
+use Latte\Compiler\Nodes\TemplateNode;
 use Latte\Compiler\Nodes\TextNode;
-use Northrook\Latte\Compiler\CompilerPassExtension;
-use Northrook\Latte\Compiler\NodeCompilerTrait;
+use Latte\Compiler\NodeTraverser;
 use const Northrook\{EMPTY_STRING, WHITESPACE};
 
-final class OptimizerExtension extends CompilerPassExtension {
 
-    use NodeCompilerTrait;
-
+final class OptimizerExtension extends Latte\Extension
+{
     /**
      * - Fixes repeated vertical white spaces outside of Nodes
      *
-     * @param bool $normalizeWhitespace Fixes repeated vertical spaces everywhere
-     * @param bool $compress            Squishes the entire template, smallest possible result
+     * @param bool  $normalizeWhitespace  Fixes repeated vertical spaces everywhere
+     * @param bool  $compress             Squishes the entire template, smallest possible result
      */
     public function __construct(
         public readonly bool $normalizeWhitespace = false,
         public readonly bool $compress = false,
     ) {}
 
+    public function getPasses() : array
+    {
+        return [
+            $this::class => static function( TemplateNode $templateNode ) : void
+            {
+                ( new NodeTraverser() )->traverse( $templateNode, [ $this, 'traverseNodes' ] );
+            },
+        ];
+    }
 
-    public function traverseNodes() : array {
+    public function traverseNodes() : array
+    {
         $passes = [
             'nodeWhitespaceFixer' => [ $this, 'nodeWhitespaceFixer' ],
             'textWhitespaceFixer' => [ $this, 'textWhitespaceFixer' ],
@@ -40,26 +50,24 @@ final class OptimizerExtension extends CompilerPassExtension {
         return $passes;
     }
 
-
     /**
      * Fixes repeated whitespace in between element attributes.
      *
-     * @param Node $node
+     * @param Node  $node
      *
      * @return Node
      */
-    public function nodeWhitespaceFixer( Node $node ) : Node {
-
+    public function nodeWhitespaceFixer( Node $node ) : Node
+    {
         // Bail if this isn't an ElementNode, or if the ElementNode has no attributes
-        if ( ! $node instanceof ElementNode || ! $node->attributes->children ) {
+        if ( !$node instanceof ElementNode || !$node->attributes->children ) {
             return $node;
         }
 
         // Loop though each attribute
         foreach ( $node->attributes->children as $index => $value ) {
-
             // Ignore anything that cannot contain a whitespace character
-            if ( ! $value instanceof TextNode ) {
+            if ( !$value instanceof TextNode ) {
                 continue;
             }
 
@@ -74,7 +82,7 @@ final class OptimizerExtension extends CompilerPassExtension {
             elseif ( \str_contains( $value->content, WHITESPACE ) ) {
                 // Get the preceding node
                 $previous = $node->attributes->children[ $index - 1 ] ?? null;
-                if ( ! $previous instanceof TextNode ) {
+                if ( !$previous instanceof TextNode ) {
                     // Normalize however many spaces to one, if this node follows an attribute
                     $value->content = WHITESPACE;
                 }
@@ -88,14 +96,16 @@ final class OptimizerExtension extends CompilerPassExtension {
         return $node;
     }
 
-    public function textWhitespaceFixer( Node $node ) : Node {
+    public function textWhitespaceFixer( Node $node ) : Node
+    {
         if ( $node instanceof TextNode && ( $this->normalizeWhitespace || $node->isWhitespace() ) ) {
             $node->content = \preg_replace( '/(\v)+/', '$1', $node->content );
         }
         return $node;
     }
 
-    public function templateCompressor( Node $node ) : Node {
+    public function templateCompressor( Node $node ) : Node
+    {
         if ( $node instanceof TextNode ) {
             $node->content = \preg_replace( '/(\s)+/', WHITESPACE, $node->content );
         }
