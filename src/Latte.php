@@ -4,17 +4,22 @@ declare( strict_types = 1 );
 
 namespace Northrook;
 
+use Closure;
 use Latte\Engine;
 use Latte\Extension;
 use Latte\Loader as LoaderInterface;
 use Latte\Loaders\FileLoader;
+use LogicException;
 use Northrook\Latte\Compiler\TemplateChainLoader;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Psr\Log\LoggerInterface;
-use Closure, Throwable, LogicException;
-use function array_map, file_exists, in_array, is_object, spl_object_id;
+use Throwable;
+use function file_exists;
+use function in_array;
+use function is_object;
+use function spl_object_id;
 
 
 /**
@@ -34,12 +39,12 @@ class Latte
     private array $postprocessors = [];
 
     public function __construct(
-        protected string                    $projectDirectory,
-        protected string                    $cacheDirectory,
-        protected string                    $locale = 'en',
-        protected ?Stopwatch                $stopwatch = null,
-        protected readonly ?LoggerInterface $logger = null,
-        public bool                         $autoRefresh = true,
+            protected string                    $projectDirectory,
+            protected string                    $cacheDirectory,
+            protected string                    $locale = 'en',
+            protected ?Stopwatch                $stopwatch = null,
+            protected readonly ?LoggerInterface $logger = null,
+            public bool                         $autoRefresh = true,
     )
     {
         $this->stopwatch      ??= new Stopwatch( true );
@@ -48,38 +53,39 @@ class Latte
     }
 
     public static function render(
-        string         $template,
-        object | array $parameters = [],
-        ?string        $block = null,
-        bool           $postProcessing = true,
+            string         $template,
+            object | array $parameters = [],
+            ?string        $block = null,
+            bool           $postProcessing = true,
     ) : string
     {
         return static::$environment?->templateToString( ... \get_defined_vars() )
                ??
                // TODO : Provide link to Documentation
                throw new LogicException(
-                   "The " . static::class . ' has not been initialized yet.',
+                       "The " . static::class . ' has not been initialized yet.',
                );
     }
 
     final public function templateToString(
-        string         $template,
-        object | array $parameters = [],
-        ?string        $block = null,
-        bool           $postProcessing = true,
+            string         $template,
+            object | array $parameters = [],
+            ?string        $block = null,
+            bool           $postProcessing = true,
     ) : string
     {
         $content = $this->engine()->renderToString(
-            $this->templateLoader->load( $template ),
-            $this->global( $parameters ),
-            $block,
+                $this->templateLoader->load( $template ),
+                $this->global( $parameters ),
+                $block,
         );
 
-        if ( !$postProcessing ) {
-            return $content;
+        if ( $postProcessing ) {
+            $content = $this->postProcessing( $content );
         }
 
-        return $this->postProcessing( $content );
+        $this->stopwatch->stop( 'latte.engine' );
+        return $content;
     }
 
     final protected function postProcessing( string $string ) : string
@@ -111,18 +117,17 @@ class Latte
         \array_map( [ $this->engine, 'addExtension' ], $this->extensions );
 
         $this->engine
-            ->setTempDirectory( $this->cacheDirectory )
-            ->setAutoRefresh( $this->autoRefresh )
-            ->setLoader( $this->loader() )
-            ->setLocale( $this->locale )
-        ;
+                ->setTempDirectory( $this->cacheDirectory )
+                ->setAutoRefresh( $this->autoRefresh )
+                ->setLoader( $this->loader() )
+                ->setLocale( $this->locale );
 
         $this->logger?->info(
-            'Started Latte Engine {id}.',
-            [
-                'id'     => spl_object_id( $this->engine ),
-                'engine' => $this->engine,
-            ],
+                'Started Latte Engine {id}.',
+                [
+                        'id'     => spl_object_id( $this->engine ),
+                        'engine' => $this->engine,
+                ],
         );
 
         return $this->engine;
@@ -140,8 +145,8 @@ class Latte
             }
             catch ( Throwable $exception ) {
                 throw new \TypeError(
-                    message  : $this::class . ' could not use provided Loader. The passed Closure is not a valid ' . LoaderInterface::class,
-                    previous : $exception,
+                        message  : $this::class . ' could not use provided Loader. The passed Closure is not a valid ' . LoaderInterface::class,
+                        previous : $exception,
                 );
             }
         }
@@ -174,7 +179,7 @@ class Latte
         foreach ( $extension as $addExtension ) {
             if ( in_array( $addExtension, $this->extensions, true ) ) {
                 $this->logger?->warning(
-                    $this::class . '->addExtension tried to add an already existing extension. Please ensure your config files; you likely have a duplicate call somewhere.',
+                        $this::class . '->addExtension tried to add an already existing extension. Please ensure your config files; you likely have a duplicate call somewhere.',
                 );
                 continue;
             }
@@ -254,7 +259,7 @@ class Latte
     {
         if ( isset( static::$environment ) ) {
             throw new LogicException(
-                'The Latte environment is a Singleton, and cannot be instantiated twice.',
+                    'The Latte environment is a Singleton, and cannot be instantiated twice.',
             );
         }
         $this::$environment ??= $this;

@@ -29,10 +29,8 @@ final class OptimizerExtension extends Latte\Extension
     public function getPasses() : array
     {
         return [
-            $this::class => static function( TemplateNode $templateNode ) : void
-            {
-                ( new NodeTraverser() )->traverse( $templateNode, [ $this, 'traverseNodes' ] );
-            },
+            $this::class => fn( TemplateNode $templateNode ) => ( new NodeTraverser() )
+                ->traverse( $templateNode, [ $this, 'traverseNodes', ] ),
         ];
     }
 
