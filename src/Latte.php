@@ -84,7 +84,7 @@ class Latte
             $content = $this->postProcessing( $content );
         }
 
-        $this->stopwatch->stop( 'latte.engine' );
+        $this->stopwatch->stop( $this::class );
         return $content;
     }
 
@@ -104,7 +104,7 @@ class Latte
 
     private function startEngine() : Engine
     {
-        $this->stopwatch->start( 'latte.engine', 'Templating' );
+        $this->stopwatch->start( $this::class, 'template' );
 
         if ( !file_exists( $this->cacheDirectory ) ) {
             $this->filesystem()->mkdir( $this->cacheDirectory );
