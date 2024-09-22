@@ -3,17 +3,20 @@
   "type": "library",
   "description": "Nette\\Latte integration for Northrook packages.",
   "license": "MIT",
-  "autoload": {
-    "psr-4": {
-      "Northrook\\": "src"
-    }
-  },
   "authors": [
     {
       "name": "Martin",
       "email": "mn@northrook.com"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "Northrook\\": "src/"
+    }
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan analyse"
+  },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
