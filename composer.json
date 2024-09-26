@@ -26,7 +26,6 @@
     "northrook/filesystem": "dev-main",
     "northrook/minify": "dev-main",
     "northrook/html-element": "dev-main",
-    "northrook/html-formatter": "dev-main",
     "northrook/latte-symfony-cache": "dev-main"
   },
   "require-dev": {

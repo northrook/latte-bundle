@@ -47,6 +47,7 @@ class Latte
             public bool                         $autoRefresh = true,
     )
     {
+
         $this->stopwatch      ??= new Stopwatch( true );
         $this->templateLoader = new TemplateChainLoader( $this->projectDirectory );
         $this->setStaticAccessor();
