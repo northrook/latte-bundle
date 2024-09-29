@@ -6,7 +6,7 @@ namespace Northrook\Latte\Compiler;
 
 use LogicException;
 use function array_search, count, file_exists, in_array, krsort, str_ends_with, str_starts_with;
-use function Northrook\normalizePath;
+use function String\normalizePath;
 
 /**
  * @internal
