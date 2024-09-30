@@ -10,7 +10,7 @@ use Latte\Compiler\Nodes\Html\ElementNode;
 use Latte\Compiler\Nodes\TemplateNode;
 use Latte\Compiler\Nodes\TextNode;
 use Latte\Compiler\NodeTraverser;
-use const String\{EMPTY_STRING, WHITESPACE};
+use const Support\{EMPTY_STRING, WHITESPACE};
 
 
 final class OptimizerExtension extends Latte\Extension
