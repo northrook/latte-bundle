@@ -20,7 +20,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": ">=8.2",
+    "php": ">=8.3",
     "latte/latte": "@stable",
     "northrook/core": "dev-main",
     "northrook/filesystem": "dev-main",

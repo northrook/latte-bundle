@@ -1,19 +1,18 @@
 <?php
 
-declare ( strict_types = 1 );
+declare(strict_types=1);
 
 namespace Northrook\Latte\Nodes;
 
-use Latte\CompileException;
-use Latte\Compiler;
+use Latte\{CompileException, Compiler};
+use Latte\Compiler\{PrintContext, Tag};
 use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
 use Latte\Compiler\Nodes\StatementNode;
-use Latte\Compiler\PrintContext;
-use Latte\Compiler\Tag;
 use Northrook\HTML\Element;
+use Generator;
 
 /**
- * Parsing `n:id` attributes for the {@see  Compiler\TemplateParser}
+ * Parsing `n:id` attributes for the {@see  Compiler\TemplateParser}.
  *
  * @copyright David Grudl
  * @see       https://davidgrudl.com  David Grudl
@@ -31,17 +30,17 @@ final class IdNode extends StatementNode
 
     /**
      * @throws CompileException
+     * @param  Tag              $tag
      */
-    public static function create( Tag $tag ) : IdNode {
+    public static function create( Tag $tag ) : IdNode
+    {
 
         if ( $tag->htmlElement->getAttribute( 'id' ) ) {
             throw new CompileException( 'It is not possible to combine id with n:id.', $tag->position );
         }
 
-        if ( !class_exists( Element::class ) ) {
-            throw new CompileException(
-                'Latte tag `n:id` requires the ' . Element::class . '::class to be present.',
-            );
+        if ( ! \class_exists( Element::class ) ) {
+            throw new CompileException( 'Latte tag `n:id` requires the '.Element::class.'::class to be present.');
         }
 
         $node       = new IdNode();
@@ -50,15 +49,17 @@ final class IdNode extends StatementNode
         return $node;
     }
 
-    public function print( PrintContext $context ) : string {
+    public function print( PrintContext $context ) : string
+    {
         return $context->format(
-            'echo ($ʟ_tmp = array_filter(%node)) ? \' id="\' . ' . Element::class . '::id(implode(" ", array_unique($ʟ_tmp))) . \'"\' : "" %line;',
+            'echo ($ʟ_tmp = array_filter(%node)) ? \' id="\' . '.Element::class.'::id(implode(" ", array_unique($ʟ_tmp))) . \'"\' : "" %line;',
             $this->args,
             $this->position,
         );
     }
 
-    public function &getIterator() : \Generator {
+    public function &getIterator() : Generator
+    {
         yield $this->args;
     }
 }

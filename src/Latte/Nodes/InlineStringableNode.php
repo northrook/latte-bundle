@@ -1,19 +1,18 @@
 <?php
 
-declare ( strict_types = 1 );
+declare(strict_types=1);
 
 namespace Northrook\Latte\Nodes;
 
-use Latte\CompileException;
-use Latte\Compiler;
+use Latte\{CompileException, Compiler};
+use Latte\Compiler\{PrintContext, Tag};
 use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
 use Latte\Compiler\Nodes\StatementNode;
-use Latte\Compiler\PrintContext;
-use Latte\Compiler\Tag;
 use Latte\Runtime\HtmlStringable;
+use Generator;
 
 /**
- * Parsing `n:class` attributes for the {@see  Compiler\TemplateParser}
+ * Parsing `n:class` attributes for the {@see  Compiler\TemplateParser}.
  *
  * @copyright David Grudl
  * @see       https://davidgrudl.com  David Grudl
@@ -27,21 +26,25 @@ use Latte\Runtime\HtmlStringable;
  */
 final class InlineStringableNode extends StatementNode
 {
-    public ArrayNode        $args;
+    public ArrayNode $args;
+
     public readonly ?string $renderedString;
 
     /**
      * @throws CompileException
+     * @param  Tag              $tag
      */
-    public static function create( Tag $tag ) : InlineStringableNode {
+    public static function create( Tag $tag ) : InlineStringableNode
+    {
 
         $node       = new InlineStringableNode();
         $node->args = $tag->parser->parseArguments();
 
-        $callable = trim( $tag->parser->text, " \n\r\t\v\0()" );
+        $callable = \trim( $tag->parser->text, " \n\r\t\v\0()" );
 
-        if ( is_callable( $callable ) &&
-             $called = ( $callable )() instanceof HtmlStringable ) {
+        if ( \is_callable( $callable )
+             && $called = ( $callable )() instanceof HtmlStringable
+        ) {
             $node->renderedString = (string) ( $callable )();
         }
         else {
@@ -51,14 +54,16 @@ final class InlineStringableNode extends StatementNode
         return $node;
     }
 
-    public function print( PrintContext $context ) : string {
+    public function print( PrintContext $context ) : string
+    {
         return $context->format(
-            'echo \'' . $this->renderedString . '\' %line;',
+            'echo \''.$this->renderedString.'\' %line;',
             $this->position,
         );
     }
 
-    public function &getIterator() : \Generator {
+    public function &getIterator() : Generator
+    {
         yield $this->args;
     }
 }
