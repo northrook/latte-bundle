@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Northrook\Latte\Nodes;
 
-use Latte\{CompileException, Compiler};
+use Latte\{Compiler};
 use Latte\Compiler\{PrintContext, Tag};
 use Latte\Compiler\Nodes\Php\Expression\ArrayNode;
 use Latte\Compiler\Nodes\StatementNode;
@@ -31,8 +31,9 @@ final class InlineStringableNode extends StatementNode
     public readonly ?string $renderedString;
 
     /**
-     * @throws CompileException
-     * @param  Tag              $tag
+     * @param Tag $tag
+     *
+     * @return InlineStringableNode
      */
     public static function create( Tag $tag ) : InlineStringableNode
     {

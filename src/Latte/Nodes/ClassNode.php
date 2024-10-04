@@ -29,8 +29,10 @@ final class ClassNode extends StatementNode
     public ArrayNode $args;
 
     /**
+     * @param Tag $tag
+     *
+     * @return ClassNode
      * @throws CompileException
-     * @param  Tag              $tag
      */
     public static function create( Tag $tag ) : ClassNode
     {
@@ -39,7 +41,7 @@ final class ClassNode extends StatementNode
         }
 
         if ( ! \class_exists( Element::class ) ) {
-            throw new CompileException( 'Latte tag `n:class` requires the '.Element::class.'::class to be present.');
+            throw new CompileException( 'Latte tag `n:class` requires the '.Element::class.'::class to be present.' );
         }
 
         $node       = new ClassNode();

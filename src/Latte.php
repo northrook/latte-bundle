@@ -8,11 +8,10 @@ use Closure;
 use Latte\{Engine, Extension, Loader as LoaderInterface};
 use Latte\Loaders\FileLoader;
 use LogicException;
+use Northrook\Filesystem\File;
 use Northrook\Latte\Compiler\TemplateChainLoader;
+use Northrook\Logger\Log;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 use TypeError;
 
@@ -41,12 +40,9 @@ class Latte
         protected string                    $projectDirectory,
         protected string                    $cacheDirectory,
         protected string                    $locale = 'en',
-        protected ?Stopwatch                $stopwatch = null,
         protected readonly ?LoggerInterface $logger = null,
         public bool                         $autoRefresh = true,
     ) {
-
-        $this->stopwatch ??= new Stopwatch( true );
         $this->templateLoader = new TemplateChainLoader( $this->projectDirectory );
         $this->setStaticAccessor();
     }
@@ -59,7 +55,7 @@ class Latte
     ) : string {
         return static::$environment?->templateToString( ...\get_defined_vars() )
                // TODO : Provide link to Documentation
-               ?? throw new LogicException( 'The '.static::class.' has not been initialized yet.');
+               ?? throw new LogicException( 'The '.static::class.' has not been initialized yet.' );
     }
 
     final public function templateToString(
@@ -78,7 +74,6 @@ class Latte
             $content = $this->postProcessing( $content );
         }
 
-        $this->stopwatch->stop( $this::class );
         return $content;
     }
 
@@ -98,10 +93,8 @@ class Latte
 
     private function startEngine() : Engine
     {
-        $this->stopwatch->start( $this::class, 'template' );
-
         if ( ! \file_exists( $this->cacheDirectory ) ) {
-            $this->filesystem()->mkdir( $this->cacheDirectory );
+            File::mkdir( $this->cacheDirectory );
         }
 
         // Initialize the Engine.
@@ -138,7 +131,7 @@ class Latte
                 $this->loader = $this->loader->__invoke();
             }
             catch ( Throwable $exception ) {
-                throw new TypeError( message  : $this::class.' could not use provided Loader. The passed Closure is not a valid '.LoaderInterface::class, previous : $exception);
+                throw new TypeError( message: $this::class.' could not use provided Loader. The passed Closure is not a valid '.LoaderInterface::class, previous : $exception );
             }
         }
 
@@ -169,8 +162,9 @@ class Latte
     {
         foreach ( $extension as $addExtension ) {
             if ( \in_array( $addExtension, $this->extensions, true ) ) {
-                $this->logger?->warning(
-                    $this::class.'->addExtension tried to add an already existing extension. Please ensure your config files; you likely have a duplicate call somewhere.',
+                Log::warning(
+                    '{caller} tried to add an already existing extension. Please ensure your config files; you likely have a duplicate call somewhere.',
+                    ['caller' => $this::class.'->addExtension'],
                 );
 
                 continue;
@@ -213,20 +207,19 @@ class Latte
         foreach ( \glob( $this->cacheDirectory.'/*.php' ) as $file ) {
             $templates[\basename( $file )] = $file;
         }
-        dump( $templates );
+
+        Log::info(
+            'Pruned {count} templates from cache.',
+            [
+                'count'  => \count( $templates ),
+                'pruned' => $templates,
+            ],
+        );
     }
 
     final public function clearTemplateCache() : bool
     {
-        try {
-            $this->filesystem()->remove( $this->cacheDirectory );
-        }
-        catch ( IOException $exception ) {
-            $this->logger?->error( $exception->getMessage() );
-            return false;
-        }
-
-        return true;
+        return File::remove( $this->cacheDirectory );
     }
 
     /**
@@ -250,14 +243,8 @@ class Latte
     private function setStaticAccessor() : void
     {
         if ( isset( static::$environment ) ) {
-            throw new LogicException( 'The Latte environment is a Singleton, and cannot be instantiated twice.');
+            throw new LogicException( 'The Latte environment is a Singleton, and cannot be instantiated twice.' );
         }
         $this::$environment ??= $this;
-    }
-
-    final protected function filesystem() : Filesystem
-    {
-        static $filesystem;
-        return $filesystem ??= new Filesystem();
     }
 }

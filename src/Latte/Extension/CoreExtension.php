@@ -42,11 +42,11 @@ final class CoreExtension extends Latte\Extension
                 \ob_start();
 
                 foreach ( $args as $arg ) {
-                    \dump( $arg );
+                    dump( $arg );
                 }
                 return new Html( \ob_get_clean() );
             },
-            'debug_dd' => static fn( ...$args ) => \dd( $args ),
+            'debug_dd' => static fn( ...$args ) => dd( $args ),
         ];
     }
 
@@ -62,10 +62,6 @@ final class CoreExtension extends Latte\Extension
      */
     public function time( ?string $format = null, ?int $timestamp = null ) : HtmlStringable
     {
-
-        // TODO: Add support for date and time formats
-        // TODO: Add support for centralized date and time formats
-
         return new Html( \date( $format ?? 'Y-m-d H:i:s', $timestamp ) );
     }
 }

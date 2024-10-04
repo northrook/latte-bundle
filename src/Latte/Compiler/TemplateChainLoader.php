@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Northrook\Latte\Compiler;
 
-use LogicException;
+use Northrook\Exception\Trigger;
 use Support\Normalize;
 
 /**
@@ -17,17 +17,13 @@ final class TemplateChainLoader
     /** @var array{string: string} */
     private array $templateDirectories = [];
 
-    public function __construct(
-        private readonly string $projectDirectory,
-    ) {}
+    public function __construct( private readonly string $projectDirectory ) {}
 
     public function add( string $path, bool|int $priority = false ) : void
     {
         if ( $this->locked ) {
-            throw new LogicException( <<<'EOD'
-                Template directory cannot be added, the Loader is locked. 
-                                The Loader is locked automatically when any template is first read.
-                EOD, );
+            Trigger::valueWarning( "Template directory cannot be added, the Loader is locked.\nThe Loader is locked automatically when any template is first read." );
+            return;
         }
 
         $priority = ( true === $priority )
