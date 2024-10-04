@@ -11,7 +11,6 @@ use LogicException;
 use Northrook\Filesystem\File;
 use Northrook\Latte\Compiler\TemplateChainLoader;
 use Northrook\Logger\Log;
-use Psr\Log\LoggerInterface;
 use Throwable;
 use TypeError;
 
@@ -37,11 +36,10 @@ class Latte
     private array $postprocessors = [];
 
     public function __construct(
-        protected string                    $projectDirectory,
-        protected string                    $cacheDirectory,
-        protected string                    $locale = 'en',
-        protected readonly ?LoggerInterface $logger = null,
-        public bool                         $autoRefresh = true,
+        protected string $projectDirectory,
+        protected string $cacheDirectory,
+        protected string $locale = 'en',
+        public bool      $autoRefresh = true,
     ) {
         $this->templateLoader = new TemplateChainLoader( $this->projectDirectory );
         $this->setStaticAccessor();
@@ -109,7 +107,7 @@ class Latte
             ->setLoader( $this->loader() )
             ->setLocale( $this->locale );
 
-        $this->logger?->info(
+        Log::info(
             'Started Latte Engine {id}.',
             [
                 'id'     => \spl_object_id( $this->engine ),
@@ -147,7 +145,6 @@ class Latte
     public function addGlobalVariable( string $key, mixed $value ) : self
     {
         $this->globalVariables[$key] = $value;
-
         return $this;
     }
 
